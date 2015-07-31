@@ -16,8 +16,8 @@ object = {
 
 - [ ] numerics (change to floats, currently `u64`)
 - [x] booleans
-- [ ] strings
-- [ ] objects
+- [x] strings
+- [x] objects
 
 ## Licence
 
