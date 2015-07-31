@@ -5,12 +5,22 @@ pub use object::Object;
 
 use std::str::{self, FromStr};
 
-use nom::{multispace, digit, alphanumeric, IResult};
+use nom::{digit, eof, space, not_line_ending, line_ending, alphanumeric, IResult};
 
 pub mod value;
 pub mod object;
 
 pub type Key = String;
+type Entry = (Key, Value);
+
+named!(comment,
+       preceded!(tag!("#"), not_line_ending));
+
+named!(blank,
+       chain!(many0!(terminated!(
+               many0!(alt!(comment | space)),
+               line_ending)),
+               || { &b""[..] }));
 
 named!(boolean<Value>,
        map!(
@@ -37,36 +47,59 @@ named!(string<Value>,
                str::from_utf8),
                From::from));
 
-named!(object<Object>,
+named!(entries<Object>,
        map!(many0!(entry), From::from));
 
-named!(object_val<Value>,
-       map!(delimited!(tag!("{"), object, tag!("}")),
+named!(object_begin,
+       chain!(space? ~ tag!("{") ~ alt!(blank | space)?, || { &b""[..] }));
+
+named!(object_end,
+       chain!(space? ~ tag!("}"), || { &b""[..] }));
+
+named!(object<Value>,
+       map!(delimited!(object_begin, entries, object_end),
        From::from));
 
 named!(value<Value>,
-       delimited!(opt!(multispace), alt!(number | boolean | string | object_val), opt!(multispace)));
+       delimited!(opt!(space), alt!(number | boolean | string | object), opt!(space)));
 
 named!(key<Key>,
        map_res!(
-           map_res!(
-               delimited!(opt!(multispace), alphanumeric, opt!(multispace)),
-               str::from_utf8),
-               FromStr::from_str));
+           chain!(key: alphanumeric ~
+                  space?,
+                  || { str::from_utf8(key).unwrap() }),
+                  FromStr::from_str));
 
-named!(entry<(Key, Value)>,
-chain!(key: key ~
-       tag!("=") ~
-       value: value,
-       || { (key, value) }));
+named!(entry<Entry>,
+       alt!(
+           chain!(space? ~
+                  key: key ~
+                  space? ~
+                  value: object ~
+                  blank?,
+                  || { (key, value) }) |
+           chain!(space? ~
+                  key: key ~
+                  tag!("=") ~
+                  value: value ~
+                  blank?,
+                  || { (key, value) })));
 
-pub fn parse<T: AsRef<[u8]>>(input: T) -> Result<Object, ()> {
-    let object = match object(input.as_ref()) {
-        IResult::Done(_, object) => object,
-        _ => return Err(())
-    };
+named!(root<Object>,
+       terminated!(delimited!(opt!(blank), entries, many0!(alt!(space | line_ending | comment))), eof));
 
-    Ok(object)
+#[derive(Debug)]
+pub enum Error {
+    ParserFailed(String),
+    Incomplete
+}
+
+pub fn parse<T: AsRef<[u8]>>(input: T) -> Result<Object, Error> {
+    match root(input.as_ref()) {
+        IResult::Done(_, object) => Ok(object),
+        IResult::Error(err) => Err(Error::ParserFailed(format!("{:?}", err))),
+        IResult::Incomplete(_) => Err(Error::Incomplete)
+    }
 }
 
 #[cfg(test)]
@@ -87,5 +120,12 @@ mod tests {
         };
 
         assert_eq!(obj.get("num"), Some(&Value::Num(666)));
+    }
+
+    #[test]
+    fn it_fails() {
+        let data = parse("str = \"test\"\nnum = 42\nbool = true\nobj = { num = 666");
+
+        assert!(data.is_err(), "data is: {:?}", data);
     }
 }

@@ -17,10 +17,7 @@ impl Object {
 impl From<Vec<(Key, Value)>> for Object {
     fn from(vec: Vec<(Key, Value)>) -> Self {
         let mut obj = Object { values: HashMap::with_capacity(vec.len()) };
-
-        for elem in vec {
-            obj.values.insert(elem.0, elem.1);
-        }
+        obj.values.extend(vec);
 
         obj
     }

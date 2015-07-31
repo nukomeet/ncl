@@ -21,7 +21,7 @@ object = {
 - [x] booleans
 - [x] strings
 - [x] objects
-- [ ] comments
+- [x] comments
 - [ ] add Mustache support for external variables/functions
 - [ ] string escapes characters
 - [ ] arrays
