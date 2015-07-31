@@ -8,6 +8,7 @@ Simple configuration format based on UCL and HCL (just rewritten to Rust).
 
 ```
 num = 42
+str = "str"
 bool = true
 object = {
   num = 666
@@ -20,6 +21,11 @@ object = {
 - [x] booleans
 - [x] strings
 - [x] objects
+- [ ] comments
+- [ ] add Mustache support for external variables/functions
+- [ ] string escapes characters
+- [ ] arrays
+- [ ] auto-arrays
 
 ## Licence
 
