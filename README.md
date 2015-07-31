@@ -21,4 +21,4 @@ object = {
 
 ## Licence
 
-See [LICENCE].
+See [`LICENCE`](LICENCE).
