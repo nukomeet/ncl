@@ -1,5 +1,7 @@
 # NCL
 
+[![Build Status](https://travis-ci.org/nukomeet/ncl.svg?branch=master)](https://travis-ci.org/nukomeet/ncl)
+
 Simple configuration format based on UCL and HCL (just rewritten to Rust).
 
 ## Syntax
