@@ -38,3 +38,30 @@ impl From<Object> for Value {
         Value::Object(Box::new(obj))
     }
 }
+
+impl Into<Option<String>> for Value {
+    fn into(self) -> Option<String> {
+        match self {
+            Value::Str(s) => Some(s),
+            _ => None
+        }
+    }
+}
+
+impl Into<Option<i64>> for Value {
+    fn into(self) -> Option<i64> {
+        match self {
+            Value::Num(n) => Some(n),
+            _ => None
+        }
+    }
+}
+
+impl Into<Option<bool>> for Value {
+    fn into(self) -> Option<bool> {
+        match self {
+            Value::Bool(b) => Some(b),
+            _ => None
+        }
+    }
+}
