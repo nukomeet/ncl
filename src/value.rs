@@ -39,28 +39,28 @@ impl From<Object> for Value {
     }
 }
 
-impl Into<Option<String>> for Value {
+impl<'a> Into<Option<String>> for &'a Value {
     fn into(self) -> Option<String> {
         match self {
-            Value::Str(s) => Some(s),
+            &Value::Str(ref s) => Some(s.clone()),
             _ => None
         }
     }
 }
 
-impl Into<Option<i64>> for Value {
+impl<'a> Into<Option<i64>> for &'a Value {
     fn into(self) -> Option<i64> {
         match self {
-            Value::Num(n) => Some(n),
+            &Value::Num(n) => Some(n),
             _ => None
         }
     }
 }
 
-impl Into<Option<bool>> for Value {
+impl<'a> Into<Option<bool>> for &'a Value {
     fn into(self) -> Option<bool> {
         match self {
-            Value::Bool(b) => Some(b),
+            &Value::Bool(b) => Some(b),
             _ => None
         }
     }

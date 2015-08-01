@@ -5,7 +5,16 @@ pub use object::Object;
 
 use std::str::{self, FromStr};
 
-use nom::{digit, eof, space, not_line_ending, line_ending, alphanumeric, IResult};
+use nom::{
+    digit,
+    eof,
+    space,
+    not_line_ending,
+    line_ending,
+    IResult,
+    is_alphabetic,
+    is_alphanumeric,
+};
 
 pub mod value;
 pub mod object;
@@ -61,11 +70,23 @@ named!(object<Value>,
        From::from));
 
 named!(value<Value>,
-       delimited!(opt!(space), alt!(number | boolean | string | object), opt!(space)));
+       delimited!(opt!(space), alt!(number | boolean | string), opt!(space)));
+
+fn keyable<'a>(input: &'a [u8]) -> IResult<'a, &'a [u8], &[u8]> {
+    if input.len() > 0 && !is_alphabetic(input[0]) {
+        return IResult::Error(nom::Err::Position(666, input));
+    }
+    for idx in 1..input.len() {
+        if !is_alphanumeric(input[idx]) && input[idx] != b'_' && input[idx] != b'-' {
+            return IResult::Done(&input[idx..], &input[0..idx]);
+        }
+    }
+    IResult::Done(b"", input)
+}
 
 named!(key<Key>,
        map_res!(
-           chain!(key: alphanumeric ~
+           chain!(key: keyable ~
                   space?,
                   || { str::from_utf8(key).unwrap() }),
                   FromStr::from_str));
@@ -108,11 +129,11 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let data = parse("str = \"test\"\nnum = 42\nbool = true\nobj = { num = 666 }").unwrap();
+        let data = parse("str = \"test\"\nnum = 42\nbool = true\nobj { num = 666 }").unwrap();
 
-        assert_eq!(data.get("str"), Some(&Value::Str("test".to_string())));
-        assert_eq!(data.get("num"), Some(&Value::Num(42)));
-        assert_eq!(data.get("bool"), Some(&Value::Bool(true)));
+        assert_eq!(data.get("str"),   Some(&Value::Str("test".to_string())));
+        assert_eq!(data.get("num"),   Some(&Value::Num(42)));
+        assert_eq!(data.get("bool"),  Some(&Value::Bool(true)));
 
         let obj = match data.get("obj").unwrap() {
             &Value::Object(ref obj) => obj,

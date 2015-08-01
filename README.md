@@ -22,6 +22,7 @@ object = {
 - [x] strings
 - [x] objects
 - [x] comments
+- [ ] subkey notation (`obj "key" {}`)
 - [ ] add Mustache support for external variables/functions
 - [ ] string escapes characters
 - [ ] arrays
