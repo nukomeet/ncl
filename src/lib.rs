@@ -72,9 +72,9 @@ named!(object<Value>,
 named!(value<Value>,
        delimited!(opt!(space), alt!(number | boolean | string), opt!(space)));
 
-fn keyable<'a>(input: &'a [u8]) -> IResult<'a, &'a [u8], &[u8]> {
+fn keyable(input: &[u8]) -> IResult<&[u8], &[u8]> {
     if input.len() > 0 && !is_alphabetic(input[0]) {
-        return IResult::Error(nom::Err::Position(666, input));
+        return IResult::Error(nom::Err::Position(nom::ErrorKind::Custom(666), input));
     }
     for idx in 1..input.len() {
         if !is_alphanumeric(input[idx]) && input[idx] != b'_' && input[idx] != b'-' {

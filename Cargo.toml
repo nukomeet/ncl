@@ -10,7 +10,7 @@ authors = [
 ]
 
 [dependencies]
-nom = "~0.3.0"
+nom = "~1.0.0"
 
 [features]
 unstable = []
